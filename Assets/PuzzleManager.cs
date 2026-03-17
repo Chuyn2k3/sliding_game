@@ -5,52 +5,52 @@ using TMPro;
 public class PuzzleManager : MonoBehaviour
 {
     [Header("UI Elements")]
-    public Button[] buttons; 
-    
-    // 1. Thêm biến này để chứa bảng Win
-    public GameObject winPanel; 
-    
+    public Button[] buttons;
+    public GameObject winPanel;
+
+    [Header("Audio")]
+    public AudioSource audioSource;
+    public AudioClip slideSound;
+    public AudioClip winSound;      // --- THÊM BIẾN MỚI CHO ÂM THANH WIN ---
+
     private Transform[] tiles = new Transform[9];
-    private int emptyIndex = 8; 
+    private int emptyIndex = 8;
 
     void Start()
     {
-        // Đảm bảo WinPanel bị tắt khi mới mở game
-        if (winPanel != null) winPanel.SetActive(false); 
+        if (winPanel != null) winPanel.SetActive(false);
 
         for (int i = 0; i < 9; i++)
         {
             tiles[i] = buttons[i].transform;
-            
+
             TextMeshProUGUI txt = buttons[i].GetComponentInChildren<TextMeshProUGUI>();
             if (txt != null)
             {
-                if (i < 8) 
+                if (i < 8)
                 {
-                    txt.text = (i + 1).ToString(); 
+                    txt.text = (i + 1).ToString();
                 }
-                else 
+                else
                 {
-                    txt.text = ""; 
-                    buttons[i].GetComponent<Image>().color = new Color(1, 1, 1, 0); 
+                    txt.text = "";
+                    buttons[i].GetComponent<Image>().color = new Color(1, 1, 1, 0);
                 }
             }
 
-            Transform currentTile = tiles[i]; 
+            Transform currentTile = tiles[i];
             buttons[i].onClick.AddListener(() => OnTileClick(currentTile));
         }
-RestartGame();
-       // ShuffleBoard();
+
+        RestartGame();
     }
-// --- HÀM MỚI: DÙNG ĐỂ CHƠI LẠI TỪ ĐẦU ---
+
     public void RestartGame()
     {
-        // 1. Tắt bảng Win đi
         if (winPanel != null) winPanel.SetActive(false);
-        
-        // 2. Trộn lại bảng để bắt đầu ván mới
         ShuffleBoard();
     }
+
     void OnTileClick(Transform clickedTile)
     {
         int clickedIndex = System.Array.IndexOf(tiles, clickedTile);
@@ -81,11 +81,23 @@ RestartGame();
 
         if (moved)
         {
+            // Phát âm thanh khi trượt
+            if (audioSource != null && slideSound != null)
+            {
+                audioSource.PlayOneShot(slideSound);
+            }
+
             UpdateVisuals();
-            
+
+            // KIỂM TRA CHIẾN THẮNG
             if (CheckWinCondition())
             {
-                // 2. Bật WinPanel sáng lên giữa màn hình khi thắng
+                // --- PHÁT ÂM THANH WIN ---
+                if (audioSource != null && winSound != null)
+                {
+                    audioSource.PlayOneShot(winSound);
+                }
+
                 if (winPanel != null) winPanel.SetActive(true);
             }
         }
@@ -102,7 +114,7 @@ RestartGame();
     {
         for (int i = 0; i < 9; i++)
         {
-            tiles[i].SetSiblingIndex(i); 
+            tiles[i].SetSiblingIndex(i);
         }
     }
 
@@ -112,13 +124,13 @@ RestartGame();
         {
             int row = emptyIndex / 3;
             int col = emptyIndex % 3;
-            
+
             System.Collections.Generic.List<int> validMoves = new System.Collections.Generic.List<int>();
-            
-            if (row > 0) validMoves.Add(emptyIndex - 3); 
-            if (row < 2) validMoves.Add(emptyIndex + 3); 
-            if (col > 0) validMoves.Add(emptyIndex - 1); 
-            if (col < 2) validMoves.Add(emptyIndex + 1); 
+
+            if (row > 0) validMoves.Add(emptyIndex - 3);
+            if (row < 2) validMoves.Add(emptyIndex + 3);
+            if (col > 0) validMoves.Add(emptyIndex - 1);
+            if (col < 2) validMoves.Add(emptyIndex + 1);
 
             int randomMove = validMoves[Random.Range(0, validMoves.Count)];
             SwapTiles(emptyIndex, randomMove);
@@ -129,9 +141,10 @@ RestartGame();
 
     bool CheckWinCondition()
     {
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < 8; i++)
         {
-            if (tiles[i] != buttons[i].transform)
+            TextMeshProUGUI txt = tiles[i].GetComponentInChildren<TextMeshProUGUI>();
+            if (txt == null || txt.text != (i + 1).ToString())
             {
                 return false;
             }
