@@ -7,13 +7,17 @@
 //     [Header("Screens (Các Màn Hình)")]
 //     public GameObject startScreen;
 //     public GameObject tutorialScreen;
-//     public GameObject gameScreen; // Màn chứa 9 nút bấm chơi game
-//     public GameObject winScreen;  // Đổi tên từ winPanel cho đồng bộ
+//     public GameObject gameScreen; 
+//     public GameObject winScreen;  
 
 //     [Header("UI Elements")]
 //     public Button[] buttons;
 //     public Button muteButton;
 //     public TextMeshProUGUI muteText;
+    
+//     // --- THÊM TÍNH NĂNG ĐẾM BƯỚC ---
+//     public TextMeshProUGUI moveCountText;    // Hiện số bước ở màn hình lúc đang chơi
+//     public TextMeshProUGUI winMoveCountText; // Hiện tổng số bước ở màn hình chiến thắng
 
 //     [Header("Audio")]
 //     public AudioSource audioSource;
@@ -23,10 +27,12 @@
 //     private Transform[] tiles = new Transform[9];
 //     private int emptyIndex = 8;
 //     private bool isMuted = false;
+    
+//     // --- THÊM BIẾN ĐẾM ---
+//     private int moveCount = 0; 
 
 //     void Start()
 //     {
-//         // Khởi tạo các nút game
 //         for (int i = 0; i < 9; i++)
 //         {
 //             tiles[i] = buttons[i].transform;
@@ -49,7 +55,6 @@
 //             });
 //         }
 
-//         // Khởi tạo nút Mute
 //         if (muteButton != null)
 //         {
 //             muteButton.onClick.RemoveAllListeners();
@@ -57,7 +62,6 @@
 //             UpdateMuteUI();
 //         }
 
-//         // Mở màn hình Start đầu tiên khi vào game
 //         OpenStartScreen();
 //     }
 
@@ -70,10 +74,6 @@
 //         }
 //         if (muteButton != null) muteButton.onClick.RemoveAllListeners();
 //     }
-
-//     // ==========================================
-//     // CÁC HÀM CHUYỂN MÀN HÌNH (Gắn vào sự kiện OnClick của Button)
-//     // ==========================================
 
 //     public void OpenStartScreen()
 //     {
@@ -95,15 +95,15 @@
 //     {
 //         if (startScreen) startScreen.SetActive(false);
 //         if (tutorialScreen) tutorialScreen.SetActive(false);
-//         if (gameScreen) gameScreen.SetActive(true); // Bật màn chơi game
+//         if (gameScreen) gameScreen.SetActive(true); 
 //         if (winScreen) winScreen.SetActive(false);
 
-//         ShuffleBoard(); // Trộn bảng khi bắt đầu
-//     }
+//         // --- RESET LẠI BƯỚC ĐẾM VỀ 0 KHI BẮT ĐẦU CHƠI ---
+//         moveCount = 0;
+//         UpdateMoveCountUI();
 
-//     // ==========================================
-//     // LOGIC GAME
-//     // ==========================================
+//         ShuffleBoard(); 
+//     }
 
 //     public void ToggleMute()
 //     {
@@ -116,6 +116,16 @@
 //     void UpdateMuteUI()
 //     {
 //         if (muteText != null) muteText.text = isMuted ? "Sound: OFF" : "Sound: ON";
+//     }
+
+//     // --- CẬP NHẬT CHỮ HIỂN THỊ SỐ BƯỚC ---
+//     void UpdateMoveCountUI()
+//     {
+//         if (moveCountText != null) 
+//             moveCountText.text = "Moves: " + moveCount;
+            
+//         if (winMoveCountText != null) 
+//             winMoveCountText.text = "Tổng số bước: " + moveCount;
 //     }
 
 //     void OnTileClick(Transform clickedTile)
@@ -143,6 +153,10 @@
 
 //         if (moved)
 //         {
+//             // --- TĂNG SỐ BƯỚC LÊN 1 VÀ CẬP NHẬT GIAO DIỆN ---
+//             moveCount++;
+//             UpdateMoveCountUI();
+
 //             if (!isMuted && audioSource != null && slideSound != null)
 //                 audioSource.PlayOneShot(slideSound);
 
@@ -153,9 +167,8 @@
 //                 if (!isMuted && audioSource != null && winSound != null)
 //                     audioSource.PlayOneShot(winSound);
                 
-//                 // --- CHUYỂN SANG MÀN HÌNH WIN ---
-//                 if (gameScreen) gameScreen.SetActive(false); // Ẩn màn chơi đi
-//                 if (winScreen) winScreen.SetActive(true);    // Hiện toàn bộ màn Win
+//                 if (gameScreen) gameScreen.SetActive(false); 
+//                 if (winScreen) winScreen.SetActive(true);    
 //             }
 //         }
 //     }
@@ -208,17 +221,15 @@ using TMPro;
 public class PuzzleManager : MonoBehaviour
 {
     [Header("Screens (Các Màn Hình)")]
-    public GameObject startScreen;
-    public GameObject tutorialScreen;
-    public GameObject gameScreen; 
-    public GameObject winScreen;  
+    public GameObject gameScreen; // Màn chứa 9 nút bấm chơi game
+    public GameObject winScreen;  // Màn hình hiển thị khi thắng
 
     [Header("UI Elements")]
     public Button[] buttons;
     public Button muteButton;
     public TextMeshProUGUI muteText;
-    
-    // --- THÊM TÍNH NĂNG ĐẾM BƯỚC ---
+
+    [Header("Đếm Bước")]
     public TextMeshProUGUI moveCountText;    // Hiện số bước ở màn hình lúc đang chơi
     public TextMeshProUGUI winMoveCountText; // Hiện tổng số bước ở màn hình chiến thắng
 
@@ -230,12 +241,11 @@ public class PuzzleManager : MonoBehaviour
     private Transform[] tiles = new Transform[9];
     private int emptyIndex = 8;
     private bool isMuted = false;
-    
-    // --- THÊM BIẾN ĐẾM ---
     private int moveCount = 0; 
 
     void Start()
     {
+        // Khởi tạo các nút game
         for (int i = 0; i < 9; i++)
         {
             tiles[i] = buttons[i].transform;
@@ -258,6 +268,7 @@ public class PuzzleManager : MonoBehaviour
             });
         }
 
+        // Khởi tạo nút Mute
         if (muteButton != null)
         {
             muteButton.onClick.RemoveAllListeners();
@@ -265,7 +276,8 @@ public class PuzzleManager : MonoBehaviour
             UpdateMuteUI();
         }
 
-        OpenStartScreen();
+        // --- GỌI NGAY MÀN CHƠI KHI VÀO GAMESCENE ---
+        StartGame();
     }
 
     void OnDestroy()
@@ -278,35 +290,25 @@ public class PuzzleManager : MonoBehaviour
         if (muteButton != null) muteButton.onClick.RemoveAllListeners();
     }
 
-    public void OpenStartScreen()
-    {
-        if (startScreen) startScreen.SetActive(true);
-        if (tutorialScreen) tutorialScreen.SetActive(false);
-        if (gameScreen) gameScreen.SetActive(false);
-        if (winScreen) winScreen.SetActive(false);
-    }
-
-    public void OpenTutorialScreen()
-    {
-        if (startScreen) startScreen.SetActive(false);
-        if (tutorialScreen) tutorialScreen.SetActive(true);
-        if (gameScreen) gameScreen.SetActive(false);
-        if (winScreen) winScreen.SetActive(false);
-    }
+    // ==========================================
+    // LOGIC CHUYỂN MÀN VÀ BẮT ĐẦU GAME
+    // ==========================================
 
     public void StartGame()
     {
-        if (startScreen) startScreen.SetActive(false);
-        if (tutorialScreen) tutorialScreen.SetActive(false);
         if (gameScreen) gameScreen.SetActive(true); 
         if (winScreen) winScreen.SetActive(false);
 
-        // --- RESET LẠI BƯỚC ĐẾM VỀ 0 KHI BẮT ĐẦU CHƠI ---
+        // Reset lại bước đếm về 0 khi bắt đầu chơi
         moveCount = 0;
         UpdateMoveCountUI();
 
         ShuffleBoard(); 
     }
+
+    // ==========================================
+    // LOGIC ÂM THANH & GIAO DIỆN
+    // ==========================================
 
     public void ToggleMute()
     {
@@ -321,7 +323,6 @@ public class PuzzleManager : MonoBehaviour
         if (muteText != null) muteText.text = isMuted ? "Sound: OFF" : "Sound: ON";
     }
 
-    // --- CẬP NHẬT CHỮ HIỂN THỊ SỐ BƯỚC ---
     void UpdateMoveCountUI()
     {
         if (moveCountText != null) 
@@ -330,6 +331,10 @@ public class PuzzleManager : MonoBehaviour
         if (winMoveCountText != null) 
             winMoveCountText.text = "Tổng số bước: " + moveCount;
     }
+
+    // ==========================================
+    // LOGIC TRÒ CHƠI (TRƯỢT GẠCH)
+    // ==========================================
 
     void OnTileClick(Transform clickedTile)
     {
@@ -356,7 +361,7 @@ public class PuzzleManager : MonoBehaviour
 
         if (moved)
         {
-            // --- TĂNG SỐ BƯỚC LÊN 1 VÀ CẬP NHẬT GIAO DIỆN ---
+            // Tăng số bước lên 1 và cập nhật giao diện
             moveCount++;
             UpdateMoveCountUI();
 
@@ -370,6 +375,7 @@ public class PuzzleManager : MonoBehaviour
                 if (!isMuted && audioSource != null && winSound != null)
                     audioSource.PlayOneShot(winSound);
                 
+                // Chuyển sang màn hình Win
                 if (gameScreen) gameScreen.SetActive(false); 
                 if (winScreen) winScreen.SetActive(true);    
             }
